@@ -16,7 +16,11 @@ public:
     if (const CStyleCastExpr *CE =
             Result.Nodes.getNodeAs<clang::CStyleCastExpr>("cast")) {
 
+      // If it comes from a macro expansion in the SystemHeaders, forget
+      // about it. This handles the case of `NULL`.
       auto &SourceManager = *Result.SourceManager;
+      if (SourceManager.isInSystemMacro(CE->getLParenLoc()))
+        return;
 
       // Report it as an error.
       auto &DiagEngine = SourceManager.getDiagnostics();
